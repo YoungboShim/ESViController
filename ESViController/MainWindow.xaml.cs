@@ -58,6 +58,8 @@ namespace ESViController
                 Debug.WriteLine("Serial not connected");
             }
 
+            uint cnt = 0;
+
             // recommended: run this in its own thread
             while (true)
             {
@@ -78,16 +80,23 @@ namespace ESViController
                         {
                             esMng.update(ds4.gamepad.LeftThumbX, ds4.gamepad.LeftThumbY, ds4.gamepad.RightThumbX, ds4.gamepad.RightThumbY);
 
-                            this.Dispatcher.Invoke(DispatcherPriority.Normal,
-                                new Action(
-                                    delegate
-                                    {
-                                        textBox.Text += String.Format("\nLeft: {0}N, Right: {1}N", esMng.es[0].force, esMng.es[1].force);
-                                        textBox.ScrollToEnd();
-                                    }));
+                            if (cnt++ % 10 == 0)
+                            {
+                                this.Dispatcher.Invoke(DispatcherPriority.Normal,
+                                    new Action(
+                                        delegate
+                                        {
+                                            textBox.Text += String.Format("\nLeft: {0}N, Right: {1}N", esMng.es[0].force, esMng.es[1].force);
+                                            textBox.ScrollToEnd();
+                                        }));
+                            }
+                            if(esMng.es[0].force > 2)
+                            {
+                                esPad.SetButtonState(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Button.Y, true);
+                            }
                         }
 
-                        Thread.Sleep(100);
+                        Thread.Sleep(10);
                     }
                     else
                     {
