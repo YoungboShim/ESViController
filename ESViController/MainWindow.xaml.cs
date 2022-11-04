@@ -37,10 +37,10 @@ namespace ESViController
             // initializes the SDK instance
             var client = new ViGEmClient();
 
-            // prepares a new DS4
-            var esPad = client.CreateDualShock4Controller();
+            // prepares a new Xbox controller
+            var esPad = client.CreateXbox360Controller();
 
-            // brings the DS4 online
+            // brings the Xbox controller online
             esPad.Connect();
 
             Debug.WriteLine("Start button clicked - ViGEm thread");
@@ -53,12 +53,13 @@ namespace ESViController
                     if (ds4.connected)
                     {
                         ds4.Update();
-                        esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.DualShock4.DualShock4Axis.LeftThumbX, ds4.leftThumbX);
-                        esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.DualShock4.DualShock4Axis.LeftThumbY, ds4.leftThumbY);
-                        esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.DualShock4.DualShock4Axis.RightThumbX, ds4.rightThumbX);
-                        esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.DualShock4.DualShock4Axis.RightThumbY, ds4.rightThumbY);
+                        esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Axis.LeftThumbX, ds4.gamepad.LeftThumbX);
+                        esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Axis.LeftThumbY, ds4.gamepad.LeftThumbY);
+                        esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Axis.RightThumbX, ds4.gamepad.RightThumbX);
+                        esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Axis.RightThumbY, ds4.gamepad.RightThumbY);
                         esPad.LeftTrigger = (byte)ds4.leftTrigger;
                         esPad.RightTrigger = (byte)ds4.rightTrigger;
+                        esPad.SetButtonsFull((ushort)ds4.gamepad.Buttons);
                         Thread.Sleep(10);
                     }
                     else

@@ -11,7 +11,7 @@ namespace ESViController
     class XInputController
     {
         Controller controller;
-        Gamepad gamepad;
+        public Gamepad gamepad;
         public bool connected = false;
         public int deadband = 2500;
         public byte leftThumbX, leftThumbY, rightThumbX, rightThumbY = 0;
