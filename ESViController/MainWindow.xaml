@@ -7,6 +7,10 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
+        <ListBox x:Name="listBox" Margin="0,0,180,0"/>
+        <Button x:Name="buttonStart" Content="Start" HorizontalAlignment="Left" Margin="620,0,0,0" VerticalAlignment="Top" Height="68" Width="180" Click="buttonStart_Click"/>
+        <Button x:Name="buttonEnd" Content="End" HorizontalAlignment="Left" Margin="620,85,0,0" VerticalAlignment="Top" Height="68" Width="180" Click="buttonEnd_Click"/>
+        <Slider x:Name="slider" HorizontalAlignment="Left" Margin="625,170,0,0" VerticalAlignment="Top" Width="165" Maximum="1000"/>
 
     </Grid>
 </Window>
