@@ -14,7 +14,10 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Nefarius.ViGEm.Client;
 using System.Threading;
+using System.Windows.Threading;
 using System.Diagnostics;
+using System.IO.Ports;
+using System.IO;
 
 namespace ESViController
 {
@@ -25,6 +28,8 @@ namespace ESViController
     {
         Thread t;
         XInputController ds4;
+        SerialPort serial = new SerialPort();
+        ExpanStickManager esMng;
 
         public MainWindow()
         {
@@ -43,7 +48,15 @@ namespace ESViController
             // brings the Xbox controller online
             esPad.Connect();
 
-            Debug.WriteLine("Start button clicked - ViGEm thread");
+            if(serial.IsOpen)
+            {
+                esMng = new ExpanStickManager(serial);
+                Debug.WriteLine("esMng created");
+            }
+            else
+            {
+                Debug.WriteLine("Serial not connected");
+            }
 
             // recommended: run this in its own thread
             while (true)
@@ -60,7 +73,21 @@ namespace ESViController
                         esPad.LeftTrigger = (byte)ds4.leftTrigger;
                         esPad.RightTrigger = (byte)ds4.rightTrigger;
                         esPad.SetButtonsFull((ushort)ds4.gamepad.Buttons);
-                        Thread.Sleep(10);
+
+                        if (esMng != null)
+                        {
+                            esMng.update(ds4.gamepad.LeftThumbX, ds4.gamepad.LeftThumbY, ds4.gamepad.RightThumbX, ds4.gamepad.RightThumbY);
+
+                            this.Dispatcher.Invoke(DispatcherPriority.Normal,
+                                new Action(
+                                    delegate
+                                    {
+                                        textBox.Text += String.Format("\nLeft: {0}N, Right: {1}N", esMng.es[0].force, esMng.es[1].force);
+                                        textBox.ScrollToEnd();
+                                    }));
+                        }
+
+                        Thread.Sleep(100);
                     }
                     else
                     {
@@ -77,16 +104,42 @@ namespace ESViController
 
         private void buttonStart_Click(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("Start button clicked - main thread");
             t = new Thread(ViGEmTest);
             t.Start();
         }
 
-        private void buttonEnd_Click(object sender, RoutedEventArgs e)
+        private void buttonReset_Click(object sender, RoutedEventArgs e)
         {
-            if (t.IsAlive)
+            string[] ports = SerialPort.GetPortNames();
+            foreach (string port in ports)
             {
-                // Terminate thread somehow.
+                comboBoxPortList.Items.Add(port);
+            }
+        }
+
+        private void buttonConnect_Click(object sender, RoutedEventArgs e)
+        {
+            if (serial.IsOpen)
+            {
+                serial.Close();
+            }
+
+            buttonConnect.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#ffdddddd"));
+            serial.PortName = comboBoxPortList.SelectedItem.ToString();
+            serial.BaudRate = 115200;
+            serial.DtrEnable = true;
+            serial.RtsEnable = true;
+
+            try
+            {
+                serial.Open();
+                string line = serial.ReadExisting();
+                Debug.WriteLine(line);
+                buttonConnect.Background = Brushes.Orange;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Serial port open failed");
             }
         }
     }
