@@ -60,7 +60,7 @@ namespace ESViController
                 Debug.WriteLine("Serial not connected");
             }
 
-            //uint cnt = 0;
+            uint cnt = 0;
             this.Dispatcher.Invoke(DispatcherPriority.Normal,
                                     new Action(
                                         delegate
@@ -99,12 +99,17 @@ namespace ESViController
                                             textBox.Text += String.Format("\nLeft: {0}N, Right: {1}N", esMng.es[0].force, esMng.es[1].force);
                                             textBox.ScrollToEnd();
                                         }));
+                                Debug.WriteLine(String.Format("left x: {0}, y: {1}", ds4.gamepad.LeftThumbX, ds4.gamepad.LeftThumbY));
                             }
                             */
-                            if(esMng.es[0].force > forceThres)
+                            
+                            
+                            if(esMng.es[0].force > forceThres && Math.Abs(ds4.gamepad.LeftThumbX) > 27000)
                             {
                                 esPad.SetButtonState(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Button.Y, true);
+
                                 /*
+                                Debug.WriteLine("Y button pressed!");
                                 this.Dispatcher.Invoke(DispatcherPriority.Normal,
                                     new Action(
                                         delegate
@@ -116,7 +121,7 @@ namespace ESViController
                             }
                         }
 
-                        //Thread.Sleep(10);
+                        Thread.Sleep(1000/120);
                     }
                     else
                     {
