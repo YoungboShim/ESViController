@@ -5,15 +5,22 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ESViController"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="494">
+        Title="MainWindow" Height="450" Width="514">
     <Grid>
-        <Button x:Name="buttonStart" Content="Start" HorizontalAlignment="Left" Margin="304,10,0,0" VerticalAlignment="Top" Height="68" Width="180" Click="buttonStart_Click" FontSize="30"/>
-        <ComboBox x:Name="comboBoxPortList" HorizontalAlignment="Left" Height="24" Margin="10,10,0,0" VerticalAlignment="Top" Width="198">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="47*"/>
+            <ColumnDefinition Width="328*"/>
+            <ColumnDefinition Width="22*"/>
+            <ColumnDefinition Width="117*"/>
+        </Grid.ColumnDefinitions>
+        <Button x:Name="buttonStart" Content="Start" HorizontalAlignment="Left" Margin="168,10,0,0" VerticalAlignment="Top" Height="68" Width="136" Click="buttonStart_Click" FontSize="30" Grid.Column="1"/>
+        <ComboBox x:Name="comboBoxPortList" HorizontalAlignment="Left" Height="24" Margin="10,10,0,0" VerticalAlignment="Top" Width="198" Grid.ColumnSpan="2">
         </ComboBox>
-        <Button x:Name="buttonReset" Content="Reset" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" Height="40" Width="87" Click="buttonReset_Click"/>
-        <Button x:Name="buttonConnect" Content="Connect" HorizontalAlignment="Left" Margin="121,39,0,0" VerticalAlignment="Top" Height="40" Width="87" Click="buttonConnect_Click"/>
-        <TextBox x:Name="textBox" Text="Force display" TextWrapping="Wrap" Margin="10,137,10,10" FontSize="24" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-        <Slider x:Name="slider" Margin="10,83,74,302" Maximum="5" Value="2" ValueChanged="slider_ValueChanged" TickPlacement="BottomRight" VerticalAlignment="Center"/>
-        <TextBox x:Name="textBoxSVal" Text="2" TextWrapping="Wrap" Margin="425,83,9,302" FontSize="18" VerticalAlignment="Center"/>
+        <Button x:Name="buttonReset" Content="Reset" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" Height="40" Width="87" Click="buttonReset_Click" Grid.ColumnSpan="2"/>
+        <Button x:Name="buttonConnect" Content="Connect" HorizontalAlignment="Left" Margin="74,39,0,0" VerticalAlignment="Top" Height="40" Width="87" Click="buttonConnect_Click" Grid.Column="1"/>
+        <TextBox x:Name="textBox" Text="Force display" TextWrapping="Wrap" Margin="10,137,10,10" FontSize="24" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="4"/>
+        <Slider x:Name="slider" Margin="10,96,74,0" Maximum="5" Value="2" ValueChanged="slider_ValueChanged" TickPlacement="BottomRight" VerticalAlignment="Top" Grid.ColumnSpan="4"/>
+        <TextBox x:Name="textBoxSVal" Text="2" TextWrapping="Wrap" Margin="43,95,9,0" FontSize="18" VerticalAlignment="Top" Grid.Column="3"/>
+        <Button x:Name="buttonEnd" Content="End" HorizontalAlignment="Left" Margin="309,10,0,0" VerticalAlignment="Top" Height="68" Width="136" Click="buttonEnd_Click" FontSize="30" Grid.ColumnSpan="3" Grid.Column="1"/>
     </Grid>
 </Window>
