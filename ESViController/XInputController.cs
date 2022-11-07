@@ -5,6 +5,7 @@ using SharpDX.XInput;
 using System.Drawing;
 using System.Diagnostics;
 using Nefarius.ViGEm.Client.Utilities;
+using System.Threading;
 
 namespace ESViController
 {
@@ -16,6 +17,7 @@ namespace ESViController
         public int deadband = 2500;
         public byte leftThumbX, leftThumbY, rightThumbX, rightThumbY = 0;
         public float leftTrigger, rightTrigger;
+        private bool vibrating = false;
 
         public XInputController()
         {
@@ -50,6 +52,29 @@ namespace ESViController
 
             leftTrigger = gamepad.LeftTrigger;
             rightTrigger = gamepad.RightTrigger;
+        }
+
+        public void VibTick()
+        {
+            if (!vibrating)
+            {
+                vibrating = true;
+                Thread t = new Thread(VibrateBoth);
+                t.Start();
+            }
+        }
+
+        void VibrateBoth()
+        {
+            Vibration v = new Vibration();
+            v.LeftMotorSpeed = 65535;
+            v.RightMotorSpeed = 65535;
+            controller.SetVibration(v);
+            Thread.Sleep(100);
+            v.LeftMotorSpeed = 0;
+            v.RightMotorSpeed = 0;
+            controller.SetVibration(v);
+            vibrating = false;
         }
 
         private byte short2byte(float val)

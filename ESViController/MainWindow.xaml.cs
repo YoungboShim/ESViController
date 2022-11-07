@@ -41,6 +41,8 @@ namespace ESViController
 
         private void ViGEmTest()
         {
+            uint cnt = 0;
+            bool thresPassed = false;
             // initializes the SDK instance
             var client = new ViGEmClient();
 
@@ -60,7 +62,6 @@ namespace ESViController
                 Debug.WriteLine("Serial not connected");
             }
 
-            uint cnt = 0;
             this.Dispatcher.Invoke(DispatcherPriority.Normal,
                                     new Action(
                                         delegate
@@ -104,10 +105,11 @@ namespace ESViController
                             */
                             
                             
-                            if(esMng.es[0].force > forceThres && Math.Abs(ds4.gamepad.LeftThumbX) > 27000)
+                            if(!thresPassed && esMng.es[0].force > forceThres && Math.Abs(ds4.gamepad.LeftThumbX) > 27000)
                             {
                                 esPad.SetButtonState(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Button.Y, true);
-
+                                ds4.VibTick();
+                                thresPassed = true;
                                 /*
                                 Debug.WriteLine("Y button pressed!");
                                 this.Dispatcher.Invoke(DispatcherPriority.Normal,
@@ -118,6 +120,10 @@ namespace ESViController
                                             textBox.ScrollToEnd();
                                         }));
                                 */
+                            }
+                            else if (esMng.es[0].force < forceThres)
+                            {
+                                thresPassed = false;
                             }
                         }
 
@@ -197,6 +203,15 @@ namespace ESViController
         private void buttonEnd_Click(object sender, RoutedEventArgs e)
         {
             ViGEmThreadOn = false;
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if(ViGEmThreadOn || t.IsAlive)
+            {
+                ViGEmThreadOn = false;
+                t.Abort();
+            }
         }
     }
 }
