@@ -30,6 +30,7 @@ namespace ESViController
         XInputController ds4;
         SerialPort serial = new SerialPort();
         ExpanStickManager esMng;
+        double forceThres = 2;
 
         public MainWindow()
         {
@@ -90,9 +91,16 @@ namespace ESViController
                                             textBox.ScrollToEnd();
                                         }));
                             }
-                            if(esMng.es[0].force > 2)
+                            if(esMng.es[0].force > forceThres)
                             {
                                 esPad.SetButtonState(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Button.Y, true);
+                                this.Dispatcher.Invoke(DispatcherPriority.Normal,
+                                    new Action(
+                                        delegate
+                                        {
+                                            textBox.Text += "\n!!!Y pressed!!!";
+                                            textBox.ScrollToEnd();
+                                        }));
                             }
                         }
 
@@ -150,6 +158,14 @@ namespace ESViController
             {
                 Debug.WriteLine("Serial port open failed");
             }
+        }
+
+        private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            forceThres = ((Slider)sender).Value;
+            if(textBoxSVal != null)
+                textBoxSVal.Text = forceThres.ToString();
+            Debug.WriteLine(String.Format("force threshold: {0}N", forceThres));
         }
     }
 }
