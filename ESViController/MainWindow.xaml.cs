@@ -30,6 +30,8 @@ namespace ESViController
         XInputController ds4;
         SerialPort serial = new SerialPort();
         ExpanStickManager esMng;
+        double forceThres = 2;
+        bool ViGEmThreadOn = true;
 
         public MainWindow()
         {
@@ -39,6 +41,8 @@ namespace ESViController
 
         private void ViGEmTest()
         {
+            uint cnt = 0;
+            bool thresPassed = false;
             // initializes the SDK instance
             var client = new ViGEmClient();
 
@@ -58,10 +62,16 @@ namespace ESViController
                 Debug.WriteLine("Serial not connected");
             }
 
-            uint cnt = 0;
+            this.Dispatcher.Invoke(DispatcherPriority.Normal,
+                                    new Action(
+                                        delegate
+                                        {
+                                            textBox.Text += "\nVigEm Start";
+                                            textBox.ScrollToEnd();
+                                        }));
 
             // recommended: run this in its own thread
-            while (true)
+            while (ViGEmThreadOn)
             {
                 try
                 {
@@ -80,7 +90,8 @@ namespace ESViController
                         {
                             esMng.update(ds4.gamepad.LeftThumbX, ds4.gamepad.LeftThumbY, ds4.gamepad.RightThumbX, ds4.gamepad.RightThumbY);
 
-                            if (cnt++ % 10 == 0)
+                            /*
+                            if (cnt++ % 1000 == 0)
                             {
                                 this.Dispatcher.Invoke(DispatcherPriority.Normal,
                                     new Action(
@@ -89,14 +100,34 @@ namespace ESViController
                                             textBox.Text += String.Format("\nLeft: {0}N, Right: {1}N", esMng.es[0].force, esMng.es[1].force);
                                             textBox.ScrollToEnd();
                                         }));
+                                Debug.WriteLine(String.Format("left x: {0}, y: {1}", ds4.gamepad.LeftThumbX, ds4.gamepad.LeftThumbY));
                             }
-                            if(esMng.es[0].force > 2)
+                            */
+                            
+                            
+                            if(!thresPassed && esMng.es[0].force > forceThres && Math.Abs(ds4.gamepad.LeftThumbX) > 27000)
                             {
                                 esPad.SetButtonState(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Button.Y, true);
+                                ds4.VibTick();
+                                thresPassed = true;
+                                /*
+                                Debug.WriteLine("Y button pressed!");
+                                this.Dispatcher.Invoke(DispatcherPriority.Normal,
+                                    new Action(
+                                        delegate
+                                        {
+                                            textBox.Text += "\n!!!Y pressed!!!";
+                                            textBox.ScrollToEnd();
+                                        }));
+                                */
+                            }
+                            else if (esMng.es[0].force < forceThres)
+                            {
+                                thresPassed = false;
                             }
                         }
 
-                        Thread.Sleep(10);
+                        Thread.Sleep(1000/120);
                     }
                     else
                     {
@@ -106,14 +137,23 @@ namespace ESViController
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.ToString());
-                    Thread.Sleep(1000);
+                    //Thread.Sleep(10);
                 }
             }
+            this.Dispatcher.Invoke(DispatcherPriority.Normal,
+                                    new Action(
+                                        delegate
+                                        {
+                                            textBox.Text += "\nVigEm Finished";
+                                            textBox.ScrollToEnd();
+                                        }));
         }
 
         private void buttonStart_Click(object sender, RoutedEventArgs e)
         {
+            ViGEmThreadOn = true;
             t = new Thread(ViGEmTest);
+            t.Priority = ThreadPriority.Highest;
             t.Start();
         }
 
@@ -149,6 +189,28 @@ namespace ESViController
             catch (Exception ex)
             {
                 Debug.WriteLine("Serial port open failed");
+            }
+        }
+
+        private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            forceThres = ((Slider)sender).Value;
+            if(textBoxSVal != null)
+                textBoxSVal.Text = forceThres.ToString();
+            Debug.WriteLine(String.Format("force threshold: {0}N", forceThres));
+        }
+
+        private void buttonEnd_Click(object sender, RoutedEventArgs e)
+        {
+            ViGEmThreadOn = false;
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if(ViGEmThreadOn || t.IsAlive)
+            {
+                ViGEmThreadOn = false;
+                t.Abort();
             }
         }
     }
