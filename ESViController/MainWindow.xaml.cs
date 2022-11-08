@@ -35,6 +35,7 @@ namespace ESViController
         bool ViGEmFpsThreadOn = true;
         double stickPercent = 0.5f;
         double fpsCursorForceT = 2f;
+        static double maxForce = 4.5;
 
         public MainWindow()
         {
@@ -154,6 +155,7 @@ namespace ESViController
 
         private void ViGEmFps()
         {
+            uint cnt = 0;
             // initializes the SDK instance
             var client = new ViGEmClient();
 
@@ -199,9 +201,23 @@ namespace ESViController
                         {
                             esMng.update(ds4.gamepad.LeftThumbX, ds4.gamepad.LeftThumbY, ds4.gamepad.RightThumbX, ds4.gamepad.RightThumbY);
 
-                            ////////TODO//////////
-                            ///
-                            //////////////////////
+                            short newRx = 0, newRy = 0;
+                            double rF = esMng.es[1].force;
+                            double mag = Math.Sqrt(Math.Pow(ds4.gamepad.RightThumbX, 2) + Math.Pow(ds4.gamepad.RightThumbY, 2));
+                            if (rF > fpsCursorForceT)
+                            {
+                                newRx = Convert.ToInt16(ds4.gamepad.RightThumbX * stickPercent + ds4.gamepad.RightThumbX / mag * short.MaxValue * (1 - stickPercent) / (maxForce - fpsCursorForceT) * (rF - fpsCursorForceT));
+                                newRy = Convert.ToInt16(ds4.gamepad.RightThumbY * stickPercent + ds4.gamepad.RightThumbY / mag * short.MaxValue * (1 - stickPercent) / (maxForce - fpsCursorForceT) * (rF - fpsCursorForceT));
+                            }
+                            else
+                            {
+                                newRx = Convert.ToInt16(ds4.gamepad.RightThumbX * stickPercent);
+                                newRy = Convert.ToInt16(ds4.gamepad.RightThumbY * stickPercent);
+                            }
+                            esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Axis.RightThumbX, newRx);
+                            esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Axis.RightThumbY, newRy);
+                            if (cnt++ % 200 == 0)
+                                Debug.WriteLine(String.Format("x: {0}, y: {1}", newRx, newRy));
                         }
                         else
                         {
@@ -305,6 +321,19 @@ namespace ESViController
             if(textBoxPercntg != null)
                 textBoxPercntg.Text = ((int)e.NewValue).ToString();
             stickPercent = e.NewValue / 100;
+        }
+
+        private void buttonFpsStart_Click(object sender, RoutedEventArgs e)
+        {
+            ViGEmFpsThreadOn = true;
+            tFps = new Thread(ViGEmFps);
+            tFps.Priority = ThreadPriority.Highest;
+            tFps.Start();
+        }
+
+        private void buttonFpsEnd_Click(object sender, RoutedEventArgs e)
+        {
+            ViGEmFpsThreadOn = false;
         }
 
         private void sliderCursorFT_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
