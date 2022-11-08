@@ -26,12 +26,16 @@ namespace ESViController
     /// </summary>
     public partial class MainWindow : Window
     {
-        Thread t;
+        Thread tCuphead, tFps;
         XInputController ds4;
         SerialPort serial = new SerialPort();
         ExpanStickManager esMng;
         double forceThres = 2;
-        bool ViGEmThreadOn = true;
+        bool ViGEmCupheadThreadOn = true;
+        bool ViGEmFpsThreadOn = true;
+        double stickPercent = 0.5f;
+        double fpsCursorForceT = 2f;
+        static double maxForce = 4.5;
 
         public MainWindow()
         {
@@ -39,7 +43,7 @@ namespace ESViController
             ds4 = new XInputController();
         }
 
-        private void ViGEmTest()
+        private void ViGEmCuphead()
         {
             uint cnt = 0;
             bool thresPassed = false;
@@ -66,12 +70,12 @@ namespace ESViController
                                     new Action(
                                         delegate
                                         {
-                                            textBox.Text += "\nVigEm Start";
+                                            textBox.Text += "\nVigEm Cuphead Start";
                                             textBox.ScrollToEnd();
                                         }));
 
             // recommended: run this in its own thread
-            while (ViGEmThreadOn)
+            while (ViGEmCupheadThreadOn)
             {
                 try
                 {
@@ -144,17 +148,110 @@ namespace ESViController
                                     new Action(
                                         delegate
                                         {
-                                            textBox.Text += "\nVigEm Finished";
+                                            textBox.Text += "\nVigEm Cuphead Finished";
+                                            textBox.ScrollToEnd();
+                                        }));
+        }
+
+        private void ViGEmFps()
+        {
+            uint cnt = 0;
+            // initializes the SDK instance
+            var client = new ViGEmClient();
+
+            // prepares a new Xbox controller
+            var esPad = client.CreateXbox360Controller();
+
+            // brings the Xbox controller online
+            esPad.Connect();
+
+            if (serial.IsOpen)
+            {
+                esMng = new ExpanStickManager(serial);
+                Debug.WriteLine("esMng created");
+            }
+            else
+            {
+                Debug.WriteLine("Serial not connected");
+            }
+
+            this.Dispatcher.Invoke(DispatcherPriority.Normal,
+                                    new Action(
+                                        delegate
+                                        {
+                                            textBox.Text += "\nVigEm FPS Start";
+                                            textBox.ScrollToEnd();
+                                        }));
+
+            // recommended: run this in its own thread
+            while (ViGEmFpsThreadOn)
+            {
+                try
+                {
+                    if (ds4.connected)
+                    {
+                        ds4.Update();
+                        esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Axis.LeftThumbX, ds4.gamepad.LeftThumbX);
+                        esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Axis.LeftThumbY, ds4.gamepad.LeftThumbY);
+                        esPad.LeftTrigger = (byte)ds4.leftTrigger;
+                        esPad.RightTrigger = (byte)ds4.rightTrigger;
+                        esPad.SetButtonsFull((ushort)ds4.gamepad.Buttons);
+
+                        if (esMng != null)
+                        {
+                            esMng.update(ds4.gamepad.LeftThumbX, ds4.gamepad.LeftThumbY, ds4.gamepad.RightThumbX, ds4.gamepad.RightThumbY);
+
+                            short newRx = 0, newRy = 0;
+                            double rF = esMng.es[1].force;
+                            double mag = Math.Sqrt(Math.Pow(ds4.gamepad.RightThumbX, 2) + Math.Pow(ds4.gamepad.RightThumbY, 2));
+                            if (rF > fpsCursorForceT)
+                            {
+                                newRx = Convert.ToInt16(ds4.gamepad.RightThumbX * stickPercent + ds4.gamepad.RightThumbX / mag * short.MaxValue * (1 - stickPercent) / (maxForce - fpsCursorForceT) * (rF - fpsCursorForceT));
+                                newRy = Convert.ToInt16(ds4.gamepad.RightThumbY * stickPercent + ds4.gamepad.RightThumbY / mag * short.MaxValue * (1 - stickPercent) / (maxForce - fpsCursorForceT) * (rF - fpsCursorForceT));
+                            }
+                            else
+                            {
+                                newRx = Convert.ToInt16(ds4.gamepad.RightThumbX * stickPercent);
+                                newRy = Convert.ToInt16(ds4.gamepad.RightThumbY * stickPercent);
+                            }
+                            esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Axis.RightThumbX, newRx);
+                            esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Axis.RightThumbY, newRy);
+                            if (cnt++ % 200 == 0)
+                                Debug.WriteLine(String.Format("x: {0}, y: {1}", newRx, newRy));
+                        }
+                        else
+                        {
+                            esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Axis.RightThumbX, ds4.gamepad.RightThumbX);
+                            esPad.SetAxisValue(Nefarius.ViGEm.Client.Targets.Xbox360.Xbox360Axis.RightThumbY, ds4.gamepad.RightThumbY);
+                        }
+
+                        Thread.Sleep(1000 / 120);
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Not connected");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+            this.Dispatcher.Invoke(DispatcherPriority.Normal,
+                                    new Action(
+                                        delegate
+                                        {
+                                            textBox.Text += "\nVigEm FPS Finished";
                                             textBox.ScrollToEnd();
                                         }));
         }
 
         private void buttonStart_Click(object sender, RoutedEventArgs e)
         {
-            ViGEmThreadOn = true;
-            t = new Thread(ViGEmTest);
-            t.Priority = ThreadPriority.Highest;
-            t.Start();
+            ViGEmCupheadThreadOn = true;
+            tCuphead = new Thread(ViGEmCuphead);
+            tCuphead.Priority = ThreadPriority.Highest;
+            tCuphead.Start();
         }
 
         private void buttonReset_Click(object sender, RoutedEventArgs e)
@@ -202,16 +299,48 @@ namespace ESViController
 
         private void buttonEnd_Click(object sender, RoutedEventArgs e)
         {
-            ViGEmThreadOn = false;
+            ViGEmCupheadThreadOn = false;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if(ViGEmThreadOn || t.IsAlive)
+            if(ViGEmCupheadThreadOn || tCuphead.IsAlive)
             {
-                ViGEmThreadOn = false;
-                t.Abort();
+                ViGEmCupheadThreadOn = false;
+                tCuphead.Abort();
             }
+            if (ViGEmFpsThreadOn || tFps.IsAlive)
+            {
+                ViGEmFpsThreadOn = false;
+                tFps.Abort();
+            }
+        }
+
+        private void sliderPrcntg_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if(textBoxPercntg != null)
+                textBoxPercntg.Text = ((int)e.NewValue).ToString();
+            stickPercent = e.NewValue / 100;
+        }
+
+        private void buttonFpsStart_Click(object sender, RoutedEventArgs e)
+        {
+            ViGEmFpsThreadOn = true;
+            tFps = new Thread(ViGEmFps);
+            tFps.Priority = ThreadPriority.Highest;
+            tFps.Start();
+        }
+
+        private void buttonFpsEnd_Click(object sender, RoutedEventArgs e)
+        {
+            ViGEmFpsThreadOn = false;
+        }
+
+        private void sliderCursorFT_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if(textBoxCursorFT != null)
+                textBoxCursorFT.Text = e.NewValue.ToString();
+            fpsCursorForceT = e.NewValue;
         }
     }
 }

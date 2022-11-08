@@ -5,22 +5,31 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ESViController"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="514" Closing="Window_Closing">
+        Title="MainWindow" Height="499" Width="514" Closing="Window_Closing">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="47*"/>
-            <ColumnDefinition Width="328*"/>
-            <ColumnDefinition Width="22*"/>
-            <ColumnDefinition Width="117*"/>
-        </Grid.ColumnDefinitions>
-        <Button x:Name="buttonStart" Content="Start" HorizontalAlignment="Left" Margin="168,10,0,0" VerticalAlignment="Top" Height="68" Width="136" Click="buttonStart_Click" FontSize="30" Grid.Column="1"/>
-        <ComboBox x:Name="comboBoxPortList" HorizontalAlignment="Left" Height="24" Margin="10,10,0,0" VerticalAlignment="Top" Width="198" Grid.ColumnSpan="2">
+
+        <Button x:Name="buttonStart" Content="Start" HorizontalAlignment="Left" Margin="224,10,0,0" VerticalAlignment="Top" Height="68" Width="129" Click="buttonStart_Click" FontSize="30"/>
+        <ComboBox x:Name="comboBoxPortList" HorizontalAlignment="Left" Height="24" Margin="10,10,0,0" VerticalAlignment="Top" Width="198" Grid.ColumnSpan="3">
         </ComboBox>
         <Button x:Name="buttonReset" Content="Reset" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" Height="40" Width="87" Click="buttonReset_Click" Grid.ColumnSpan="2"/>
-        <Button x:Name="buttonConnect" Content="Connect" HorizontalAlignment="Left" Margin="74,39,0,0" VerticalAlignment="Top" Height="40" Width="87" Click="buttonConnect_Click" Grid.Column="1"/>
-        <TextBox x:Name="textBox" Text="Force display" TextWrapping="Wrap" Margin="10,137,10,10" FontSize="24" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="4"/>
-        <Slider x:Name="slider" Margin="10,96,74,0" Maximum="5" Value="2" ValueChanged="slider_ValueChanged" TickPlacement="BottomRight" VerticalAlignment="Top" Grid.ColumnSpan="4"/>
-        <TextBox x:Name="textBoxSVal" Text="2" TextWrapping="Wrap" Margin="43,95,9,0" FontSize="18" VerticalAlignment="Top" Grid.Column="3"/>
-        <Button x:Name="buttonEnd" Content="End" HorizontalAlignment="Left" Margin="309,10,0,0" VerticalAlignment="Top" Height="68" Width="136" Click="buttonEnd_Click" FontSize="30" Grid.ColumnSpan="3" Grid.Column="1"/>
+        <Button x:Name="buttonConnect" Content="Connect" HorizontalAlignment="Left" Margin="121,39,0,0" VerticalAlignment="Top" Height="40" Width="87" Click="buttonConnect_Click"/>
+        <TextBox x:Name="textBox" Text="Force display" TextWrapping="Wrap" Margin="10,137,10,281" FontSize="24" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="5"/>
+        <Slider x:Name="slider" Margin="10,96,74,0" Maximum="5" Value="2" ValueChanged="slider_ValueChanged" TickPlacement="BottomRight" VerticalAlignment="Top" Grid.ColumnSpan="5"/>
+        <TextBox x:Name="textBoxSVal" Text="2" TextWrapping="Wrap" Margin="445,95,9,0" FontSize="18" VerticalAlignment="Top"/>
+        <Button x:Name="buttonEnd" Content="End" HorizontalAlignment="Left" Margin="361,10,0,0" VerticalAlignment="Top" Height="68" Width="129" Click="buttonEnd_Click" FontSize="30"/>
+        <Label x:Name="label1" Content="Stick %" HorizontalAlignment="Left" Margin="10,207,0,0" VerticalAlignment="Top" Grid.ColumnSpan="5" FontSize="20" Width="494"/>
+        <DockPanel LastChildFill="False" Margin="10,249,9,180" Grid.ColumnSpan="5">
+            <Slider x:Name="sliderPrcntg" Grid.ColumnSpan="4" TickPlacement="BottomRight" Maximum="100" Value="50" SmallChange="1" TickFrequency="10" Width="431" ValueChanged="sliderPrcntg_ValueChanged" LargeChange="10"/>
+            <TextBox x:Name="textBoxPercntg" Text="50" TextWrapping="Wrap" Grid.Column="3" FontSize="18" Width="40"/>
+        </DockPanel>
+        <Label x:Name="label2" Content="Cursor force threshold" HorizontalAlignment="Left" Margin="10,308,0,0" VerticalAlignment="Top" Grid.ColumnSpan="5" FontSize="20" Width="494"/>
+
+        <DockPanel LastChildFill="False" Margin="10,350,10,80" Grid.ColumnSpan="5">
+            <Slider x:Name="sliderCursorFT" Grid.ColumnSpan="4" TickPlacement="BottomRight" Maximum="4.4" Value="1.7" Width="432" ValueChanged="sliderCursorFT_ValueChanged"/>
+            <TextBox x:Name="textBoxCursorFT" Text="1.7" TextWrapping="Wrap" Grid.Column="3" FontSize="18" Width="39"/>
+        </DockPanel>
+        <Button x:Name="buttonFpsStart" Content="FPS Start" Margin="71,408,289,10" FontSize="20" Click="buttonFpsStart_Click"/>
+        <Button x:Name="buttonFpsEnd" Content="FPS End" Margin="290,408,74,10" FontSize="20" Click="buttonFpsEnd_Click"/>
+
     </Grid>
 </Window>
