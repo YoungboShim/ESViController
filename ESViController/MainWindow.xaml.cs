@@ -35,6 +35,7 @@ namespace ESViController
         bool ViGEmFpsThreadOn = true;
         double stickPercent = 0.5f;
         double fpsCursorForceT = 2f;
+        double slope = 1;
         static double maxForce = 4.5;
 
         public MainWindow()
@@ -202,12 +203,19 @@ namespace ESViController
                             esMng.update(ds4.gamepad.LeftThumbX, ds4.gamepad.LeftThumbY, ds4.gamepad.RightThumbX, ds4.gamepad.RightThumbY);
 
                             short newRx = 0, newRy = 0;
+                            double tmpRx = 0, tmpRy = 0;
                             double rF = esMng.es[1].force;
                             double mag = Math.Sqrt(Math.Pow(ds4.gamepad.RightThumbX, 2) + Math.Pow(ds4.gamepad.RightThumbY, 2));
                             if (rF > fpsCursorForceT)
                             {
-                                newRx = Convert.ToInt16(ds4.gamepad.RightThumbX * stickPercent + ds4.gamepad.RightThumbX / mag * short.MaxValue * (1 - stickPercent) / (maxForce - fpsCursorForceT) * (rF - fpsCursorForceT));
-                                newRy = Convert.ToInt16(ds4.gamepad.RightThumbY * stickPercent + ds4.gamepad.RightThumbY / mag * short.MaxValue * (1 - stickPercent) / (maxForce - fpsCursorForceT) * (rF - fpsCursorForceT));
+                                tmpRx = ds4.gamepad.RightThumbX * stickPercent + ds4.gamepad.RightThumbX / mag * short.MaxValue * (1 - stickPercent) / (maxForce - fpsCursorForceT) * (rF - fpsCursorForceT) * slope;
+                                tmpRy = ds4.gamepad.RightThumbY * stickPercent + ds4.gamepad.RightThumbY / mag * short.MaxValue * (1 - stickPercent) / (maxForce - fpsCursorForceT) * (rF - fpsCursorForceT) * slope;
+                                tmpRx = tmpRx > short.MaxValue ? short.MaxValue : tmpRx;
+                                tmpRx = tmpRx < short.MinValue ? short.MinValue : tmpRx;
+                                tmpRy = tmpRy > short.MaxValue ? short.MaxValue : tmpRy;
+                                tmpRy = tmpRy < short.MinValue ? short.MinValue : tmpRy;
+                                newRx = Convert.ToInt16(tmpRx);
+                                newRy = Convert.ToInt16(tmpRy);
                             }
                             else
                             {
@@ -334,6 +342,15 @@ namespace ESViController
         private void buttonFpsEnd_Click(object sender, RoutedEventArgs e)
         {
             ViGEmFpsThreadOn = false;
+        }
+
+        private void sliderSlope_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (textBoxSlope != null)
+            {
+                textBoxSlope.Text = e.NewValue.ToString();
+            }
+            slope = e.NewValue;
         }
 
         private void sliderCursorFT_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
