@@ -139,8 +139,8 @@ namespace ESViController
             preParams[0] = new RegParams();
             preParams[1] = new RegParams();
 
-            var pathL = @"D:\\workspace\\ESViController\\ESViController\\L_params_v2_1.json";
-            var pathR = @"D:\\workspace\\ESViController\\ESViController\\R_params_v2_2.json";
+            var pathL = @".\\L_params_v2_1.json";
+            var pathR = @".\\R_params_v2_2.json";
             string paramJsonL = System.IO.File.ReadAllText(pathL);
             string paramJsonR = System.IO.File.ReadAllText(pathR);
 
